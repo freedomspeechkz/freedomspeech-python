@@ -48,7 +48,7 @@ def test_stream_transcribe_events_and_protocol():
     events = list(fs.stream_transcribe(pcm16_frames(pcm, frame_ms=100), prettify=False, realtime=True,
                                        final_timeout=5.0))
     assert time.monotonic() - t0 < 3.0  # закончили по final после stop, а не по final_timeout
-    assert ws.url == "wss://freedomspeech.kz/ws/asr?apiKey=k&prettify=false"
+    assert ws.url == "wss://api.freedomspeech.kz/ws/asr?apiKey=k&prettify=false"
     assert ws.headers["User-Agent"].startswith("Mozilla/5.0")
     assert [e.type for e in events] == ["partial", "final", "final"]
     assert events[0].is_final is False and events[1].is_final is True
@@ -64,7 +64,7 @@ def test_stream_transcribe_default_prettify_url():
     ws = FakeWS([{"type": "ready"}, TimeoutError()])
     fs = _client(ws)
     list(fs.stream_transcribe([silence(100)], final_timeout=0.1))
-    assert ws.url == "wss://freedomspeech.kz/ws/asr?apiKey=k"
+    assert ws.url == "wss://api.freedomspeech.kz/ws/asr?apiKey=k"
 
 
 def test_stream_transcribe_error_frame():
@@ -135,7 +135,7 @@ def test_stream_speech_collects_pcm():
     fs = _client(ws)
     chunks = list(fs.stream_speech("Сәлем", voice="tomiris", language="kk", request_id="r1"))
     assert chunks == [a, b]
-    assert ws.url == "wss://freedomspeech.kz/ws/tts?apiKey=k"
+    assert ws.url == "wss://api.freedomspeech.kz/ws/tts?apiKey=k"
     req = ws.sent_json()[0]
     assert req == {"type": "synthesize", "text": "Сәлем", "requestId": "r1", "voice": "tomiris",
                    "model": "freedomspeech-flash", "language": "kk"}

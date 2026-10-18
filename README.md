@@ -1,8 +1,8 @@
 # freedomspeech
 
-Python SDK для API [Freedom Speech](https://freedomspeech.kz): распознавание и синтез казахской, русской и английской речи, клонирование голоса, перевод. Документация API: <https://freedomspeech.kz/docs>.
+Python SDK для API [Freedom Speech](https://api.freedomspeech.kz): распознавание и синтез казахской, русской и английской речи, клонирование голоса, перевод. Документация API: <https://freedomspeech.kz/docs>.
 
-Python SDK for the [Freedom Speech](https://freedomspeech.kz) API: Kazakh, Russian and English speech recognition and synthesis, voice cloning, translation. API reference: <https://freedomspeech.kz/docs>. English section below.
+Python SDK for the [Freedom Speech](https://api.freedomspeech.kz) API: Kazakh, Russian and English speech recognition and synthesis, voice cloning, translation. API reference: <https://freedomspeech.kz/docs>. English section below.
 
 Python 3.9+. Зависимости: `requests`, `websockets`.
 
@@ -70,8 +70,10 @@ fs voices
 ### Клиент
 
 ```python
-fs = FreedomSpeech(api_key=None, base_url="https://freedomspeech.kz", timeout=60)
+fs = FreedomSpeech(api_key=None, base_url="https://api.freedomspeech.kz", timeout=60)
 ```
+
+Ключ из кабинета console.freedomspeech.kz работает на https://api.freedomspeech.kz, это адрес по умолчанию с версии 0.1.1. На этом адресе опубликованы распознавание (`transcribe`, `stream_transcribe`) и синтез (`speak`, `stream_speech`). Клонирование голоса, voice design, перевод, каталог голосов и `health` на нём пока не опубликованы (бэкенд в работе) и ключам кабинета недоступны; для другого адреса передайте `base_url` или задайте `FS_BASE_URL`.
 
 Ключ берётся из аргумента или переменной окружения `FS_API_KEY`. HTTP-запросы идут с заголовком `X-API-Key`, WebSocket открывается с `?apiKey=`. Флаг `bearer_auth=True` дополнительно добавляет `Authorization: Bearer`; публичная документация описывает только `X-API-Key`, флаг нужен для прокси.
 

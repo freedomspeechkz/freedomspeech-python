@@ -33,7 +33,7 @@ from .models import (CloneVariant, Detection, Transcription, TranscriptEvent, Tr
                      VoiceDesign)
 from .streaming import ASRStream, TTSStream, WSConnect, default_ws_connect, open_ws, transcribe_iter
 
-DEFAULT_BASE_URL = "https://freedomspeech.kz"
+DEFAULT_BASE_URL = "https://api.freedomspeech.kz"
 ENV_API_KEY = "FS_API_KEY"
 ENV_BASE_URL = "FS_BASE_URL"
 DEFAULT_TIMEOUT = 60.0
@@ -56,8 +56,12 @@ class FreedomSpeech:
     Args:
         api_key: ключ API. Если не задан, берётся из переменной окружения ``FS_API_KEY``.
             Для публичных вызовов (``voices``, ``languages``, ``health``) ключ не нужен.
-        base_url: адрес API, по умолчанию ``https://freedomspeech.kz``
-            (или переменная окружения ``FS_BASE_URL``).
+        base_url: адрес API, по умолчанию ``https://api.freedomspeech.kz``
+            (или переменная окружения ``FS_BASE_URL``). Ключ из кабинета
+            console.freedomspeech.kz работает на этом адресе: распознавание, синтез и оба
+            WebSocket. Клонирование, voice design, перевод, каталог голосов и health на нём
+            пока не опубликованы (бэкенд в работе), ключам кабинета они недоступны;
+            для другого ключа и адреса передайте свой ``base_url``.
         timeout: таймаут HTTP-запроса и ожидания кадра по WebSocket, секунды.
         bearer_auth: дополнительно слать ``Authorization: Bearer <ключ>``. Документация
             описывает только ``X-API-Key``; флаг для прокси и будущих версий, по умолчанию выключен.
@@ -309,7 +313,11 @@ class FreedomSpeech:
     # ------------------------------------------------------------------ голоса
 
     def voices(self) -> List[Voice]:
-        """Список голосов: ``GET /api/voices``, без ключа. / List catalog voices."""
+        """Список голосов: ``GET /api/voices``, без ключа. / List catalog voices.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
+        """
         data = self._json(self._request("GET", "/api/voices", auth=False))
         if isinstance(data, dict):
             data = data.get("voices") or data.get("data") or []
@@ -317,6 +325,9 @@ class FreedomSpeech:
 
     def voice_preview(self, voice_id: str) -> bytes:
         """Готовый образец голоса каталога: ``GET /api/voices/{id}/preview``, WAV байтами.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
 
         У встроенных голосов образца нет (404): озвучьте фразу через ``speak``.
         """
@@ -328,6 +339,9 @@ class FreedomSpeech:
                     speed: Optional[float] = None, duration: Optional[float] = None,
                     filename: Optional[str] = None, timeout: Optional[float] = None) -> bytes:
         """Озвучить текст голосом из записи или голосом каталога: ``POST /api/voice-clone``.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
 
         Clone a voice from a reference recording (or catalog voice) and speak the text; returns WAV.
 
@@ -356,6 +370,9 @@ class FreedomSpeech:
                              timeout: Optional[float] = None) -> List[CloneVariant]:
         """То же, что ``clone_voice``, но ``?variants=all``: результат каждого движка.
 
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
+
         Same as ``clone_voice`` with ``?variants=all``: one WAV per engine (``omnivoice``, ``flash``).
         Упавший движок в списке отсутствует; 502 приходит, только если упали все.
         """
@@ -368,6 +385,9 @@ class FreedomSpeech:
     def design_voice(self, text: str, instruct: str, *, language: Optional[str] = None,
                      timeout: Optional[float] = None) -> VoiceDesign:
         """Создать голос по описанию и озвучить им текст: ``POST /api/voice-design``.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
 
         Design a voice from a text description and speak the text with it.
 
@@ -406,6 +426,9 @@ class FreedomSpeech:
                   source_lang: Optional[str] = None) -> List[Translation]:
         """Перевести строки между kk, ru, en: ``POST /v2/translate``. / Translate up to 50 strings.
 
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
+
         Порядок и число результатов совпадают с входом. ``detected_source_language`` заполнено,
         только если ``source_lang`` не передан.
         """
@@ -417,20 +440,31 @@ class FreedomSpeech:
         return [Translation.from_json(t) for t in items if isinstance(t, dict)]
 
     def detect_language(self, text: Union[str, Sequence[str]]) -> List[Detection]:
-        """Определить язык строк: ``POST /v2/detect``. / Detect the language of up to 50 strings."""
+        """Определить язык строк: ``POST /v2/detect``. / Detect the language of up to 50 strings.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
+        """
         body = {"text": text if isinstance(text, str) else list(text)}
         data = self._json(self._request("POST", "/v2/detect", json_body=body))
         items = data.get("detections", []) if isinstance(data, dict) else []
         return [Detection.from_json(d) for d in items if isinstance(d, dict)]
 
     def languages(self) -> Dict[str, Any]:
-        """Языки перевода: ``GET /v2/languages``, без ключа. / Supported translation languages."""
+        """Языки перевода: ``GET /v2/languages``, без ключа. / Supported translation languages.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
+        """
         return self._json(self._request("GET", "/v2/languages", auth=False))
 
     # ------------------------------------------------------------------ сервис
 
     def health(self) -> Dict[str, Any]:
         """Состояние распознавания: ``GET /api/asr/health``, без ключа. / ASR service health.
+
+        На адресе по умолчанию ``https://api.freedomspeech.kz`` маршрут пока не опубликован (404),
+        ключам кабинета недоступен; нужен свой ``base_url``.
 
         При 503 поднимает ``FreedomSpeechError`` с телом ``{"status": "unavailable", ...}``.
         """

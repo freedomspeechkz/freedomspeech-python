@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "freedomspeech"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python SDK for the Freedom Speech API: Kazakh, Russian and English speech recognition, synthesis, voice cloning and translation"
 readme = "README.md"
 license = { text = "MIT" }

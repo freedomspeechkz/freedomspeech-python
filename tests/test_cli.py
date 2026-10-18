@@ -156,4 +156,4 @@ def test_version(capsys):
     with pytest.raises(SystemExit) as ei:
         cli.main(["--version"])
     assert ei.value.code == 0
-    assert "freedomspeech 0.1.0" in capsys.readouterr().out
+    assert "freedomspeech 0.1.1" in capsys.readouterr().out

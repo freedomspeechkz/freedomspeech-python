@@ -53,7 +53,7 @@ def test_public_endpoints_without_key(monkeypatch, session):
     voices = fs.voices()
     assert voices[0].id == "tomiris" and voices[0].type == "builtin"
     assert "X-API-Key" not in session.last["headers"]
-    assert session.last["url"] == "https://freedomspeech.kz/api/voices"
+    assert session.last["url"] == "https://api.freedomspeech.kz/api/voices"
 
 
 def test_base_url_and_ws_url(session):
@@ -117,7 +117,7 @@ def test_transcribe_bytes_multipart(client, session):
     assert r.segments == []
     call = session.last
     assert call["method"] == "POST"
-    assert call["url"] == "https://freedomspeech.kz/v1/audio/transcriptions"
+    assert call["url"] == "https://api.freedomspeech.kz/v1/audio/transcriptions"
     name, blob, mime = call["files"]["file"]
     assert (name, blob, mime) == ("a.wav", b"RIFF....", "audio/x-wav") or mime == "audio/wav"
     assert call["data"] == {"prettify": "true"}
@@ -168,7 +168,7 @@ def test_speak_json_body(client, session):
     out = client.speak("Сәлем <pause> қош келдіңіз", voice="Tomiris", language="kk", emotion="happy")
     assert out == WAV
     call = session.last
-    assert call["url"] == "https://freedomspeech.kz/v1/audio/speech"
+    assert call["url"] == "https://api.freedomspeech.kz/v1/audio/speech"
     assert call["json"] == {"input": "Сәлем <pause> қош келдіңіз", "voice": "Tomiris", "language": "kk", "emotion": "happy"}
     assert call["files"] is None and call["data"] is None
     assert call["timeout"] == 60.0
@@ -207,7 +207,7 @@ def test_clone_voice_reference(client, session, tmp_path):
     out = client.clone_voice("Сәлеметсіз бе", reference_audio=str(ref), language="kk", speed=1.2)
     assert out == WAV
     call = session.last
-    assert call["url"] == "https://freedomspeech.kz/api/voice-clone"
+    assert call["url"] == "https://api.freedomspeech.kz/api/voice-clone"
     assert call["params"] is None
     assert call["data"] == {"text": "Сәлеметсіз бе", "language": "kk", "speed": "1.2"}
     assert call["files"]["audio"][0] == "me.wav"
